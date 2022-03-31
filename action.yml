@@ -1,11 +1,25 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Github Api Checkout'
+description: 'Checkout Github files by Github Api'
+author: 'Cheng Huang'
 inputs:
-  milliseconds: # change this
+  repository:
+    description: Repository
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  out-directory:
+    description: Out directory
+    required: false
+    default: "."
+  paths:
+    description: Checkout files/folders
+    required: true
+  github-token:
+    description: Github token
+    required: true
+  refs:
+    description: Github ref / hash
+    required: false
+    default: ''
+
 runs:
   using: 'node16'
   main: 'dist/index.js'
