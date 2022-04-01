@@ -1,21 +1,21 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "api-checkout-action",
+  "version": "1.0.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "API Checkout Action",
   "main": "lib/main.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mdsol/rave_ci.git"
+  },
   "scripts": {
     "build": "tsc",
-    "format": "prettier --write '**/*.ts'",
+    "format": "prettier --write **/*.ts",
     "format-check": "prettier --check '**/*.ts'",
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
     "test": "jest",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
   },
   "keywords": [
     "actions",
@@ -23,7 +23,7 @@
     "setup"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "ISC",
   "dependencies": {
     "@actions/core": "^1.6.0",
     "@actions/io": "^1.1.2",

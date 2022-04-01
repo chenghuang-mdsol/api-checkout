@@ -1,7 +1,4 @@
 import * as core from '@actions/core'
-import * as io from '@actions/io'
-import * as path from 'path'
-import {Octokit} from '@octokit/rest'
 import {getFiles} from './functions'
 
 async function run(): Promise<void> {
@@ -12,8 +9,7 @@ async function run(): Promise<void> {
     const githubToken: string = core.getInput('github-token')
     const refs: string = core.getInput('refs')
 
-    await getFiles(repository, paths, refs, githubToken, outDirectory);
-
+    await getFiles(repository, paths, refs, githubToken, outDirectory)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

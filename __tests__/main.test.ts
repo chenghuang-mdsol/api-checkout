@@ -6,5 +6,7 @@ import {expect, test} from '@jest/globals'
 
 test('throws invalid api call', async () => {
   const input = parseInt('foo', 10)
-  await expect(getFiles("abc",["abc"],"","invalid token",".")).rejects.toThrow()
+  await expect(
+    getFiles('abc', ['abc'], '', 'invalid token', '.')
+  ).rejects.toThrow()
 })
