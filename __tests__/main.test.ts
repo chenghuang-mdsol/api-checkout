@@ -10,3 +10,18 @@ test('throws invalid api call', async () => {
     getFiles('abc', ['abc'], '', 'invalid token', '.')
   ).rejects.toThrow()
 })
+
+// test('get files', async () => {
+//   await getFiles(
+//     'mdsol/RaveEDC',
+//     [
+//       'db/Medidata.Database.SampleData/DataSet_RaveIntegrationTestData/dbo.Fields.sql',
+//       'pir',
+//       'cd',
+//       'manifests'
+//     ],
+//     'develop',
+//     '{input your token here}',
+//     'c:\\temp\\test\\abc'
+//   )
+// })

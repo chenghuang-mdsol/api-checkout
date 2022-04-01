@@ -39,33 +39,54 @@ exports.getFiles = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(5747));
 const io = __importStar(__nccwpck_require__(7436));
+const oct = __importStar(__nccwpck_require__(5375));
 const path = __importStar(__nccwpck_require__(5622));
-const rest_1 = __nccwpck_require__(5375);
 function getFiles(repository, paths, refs, githubToken, outDirectory) {
     return __awaiter(this, void 0, void 0, function* () {
-        const octokit = new rest_1.Octokit({ auth: githubToken });
+        yield io.mkdirP(outDirectory);
+        const octokit = new oct.Octokit({ auth: githubToken });
         for (const filePath of paths) {
             let api = `https://api.github.com/repos/${repository}/contents/${filePath}`;
-            if (!refs) {
+            let apiParent = path.parse(api).dir;
+            let data;
+            if (refs && refs.trim()) {
                 api += `?ref=${refs}`;
+                apiParent += `?ref=${refs}`;
             }
-            const response = yield octokit.request(api);
-            if (response.status !== 200) {
-                throw new Error(`${api} is not reachable. Status: ${response.status}, Data: ${response.data}`);
+            let response;
+            try {
+                response = yield octokit.request(api);
+                data = response.data;
             }
-            const entry = response.data;
-            if (entry.type === 'file') {
-                if (entry.size / 1024 / 1024 > 1) {
-                    getFileByGitUrl(entry.git_url, path.join(outDirectory, entry.path), octokit);
+            catch (err) {
+                if (err.message.includes('This API returns blobs up to 1 MB in size')) {
+                    response = yield octokit.request(apiParent);
+                    data = [
+                        response.data.filter(function (p) {
+                            return p.path === filePath;
+                        })[0]
+                    ];
                 }
                 else {
-                    if (entry.size > 0 && entry.downloadUrl && entry.downloadUrl.trim()) {
-                        getFileByDownloadUrl(entry.download_url, path.join(outDirectory, entry.path), octokit);
-                    }
+                    throw new Error(`${api} is not reachable. Status: ${err}`);
                 }
             }
-            if (entry.type === 'dir') {
-                getFiles(repository, [entry.path], refs, githubToken, outDirectory);
+            for (const entry of data) {
+                if (entry.type === 'file') {
+                    if (entry.size / 1024 / 1024 > 1) {
+                        getFileByGitUrl(entry.git_url, path.join(outDirectory, entry.path), octokit);
+                    }
+                    else {
+                        if (entry.size > 0 &&
+                            entry.download_url &&
+                            entry.download_url.trim()) {
+                            getFileByDownloadUrl(entry.download_url, path.join(outDirectory, entry.path), octokit);
+                        }
+                    }
+                }
+                if (entry.type === 'dir') {
+                    getFiles(repository, [entry.path], refs, githubToken, outDirectory);
+                }
             }
         }
     });
@@ -78,11 +99,15 @@ function getFileByGitUrl(gitUrl, outFile, octokit) {
             throw new Error(`Unexpected response from GitHub API when fetching ${gitUrl}. Status: ${response.status}, Data: ${response.data}`);
         }
         let content = response.data.content;
-        const encoded = response.data.encoded;
+        const encoded = response.data.encoding;
         if (encoded === 'base64') {
             content = Buffer.from(content, 'base64').toString('binary');
         }
-        fs.writeFileSync(outFile, content);
+        const dir = path.parse(outFile).dir;
+        yield io.mkdirP(dir);
+        fs.writeFile(outFile, content, function () {
+            core.info(`${gitUrl} => ${outFile}`);
+        });
     });
 }
 function getFileByDownloadUrl(downloadUrl, outFile, octokit) {
@@ -90,19 +115,16 @@ function getFileByDownloadUrl(downloadUrl, outFile, octokit) {
         if (!downloadUrl) {
             throw new Error(`${downloadUrl} is not reachable`);
         }
-        if (!outFile) {
-            const dir = path.parse(outFile).base;
-            if (!dir) {
-                yield io.mkdirP(dir);
-            }
-            const response = yield octokit.request(downloadUrl);
-            if (response.status !== 200) {
-                throw new Error(`Unexpected response from GitHub API when fetching ${downloadUrl}. Status: ${response.status}, Data: ${response.data}`);
-            }
-            const buffer = Buffer.from(response.data);
-            core.info(`${downloadUrl} => ${outFile}`);
-            fs.promises.writeFile(outFile, buffer);
+        const dir = path.parse(outFile).dir;
+        yield io.mkdirP(dir);
+        const response = yield octokit.request(downloadUrl);
+        if (response.status !== 200) {
+            throw new Error(`Unexpected response from GitHub API when fetching ${downloadUrl}. Status: ${response.status}, Data: ${response.data}`);
         }
+        const buffer = Buffer.from(response.data);
+        fs.writeFile(outFile, buffer, function () {
+            core.info(`${downloadUrl} => ${outFile}`);
+        });
     });
 }
 
