@@ -29,9 +29,8 @@ export async function getFiles(
   const octokit = new oct.Octokit({auth: githubToken})
   for (const filePath of paths) {
     let api = `https://api.github.com/repos/${repository}/contents/${filePath}`
-    core.info(`Handle api ${api}`)
     let apiParent = path.parse(api).dir
-    let data: ContentAPIEntry[]
+    //let data: ContentAPIEntry[]
     if (refs && refs.trim()) {
       api += `?ref=${refs}`
       apiParent += `?ref=${refs}`
@@ -40,7 +39,7 @@ export async function getFiles(
     let response: octTypes.OctokitResponse<ContentAPIEntry[], number>
     try {
       response = await octokit.request(api)
-      data = response.data
+      //data = response.data
     } catch (err) {
       if (
         (err as GithubErrorMessage).message.includes(
@@ -48,7 +47,7 @@ export async function getFiles(
         )
       ) {
         response = await octokit.request(apiParent)
-        data = [
+        response.data = [
           response.data.filter(function (p: ContentAPIEntry) {
             return p.path === filePath
           })[0]
@@ -57,8 +56,10 @@ export async function getFiles(
         throw new Error(`${api} is not reachable. Status: ${err}`)
       }
     }
-
-    for (const entry of data) {
+    if (!(Symbol.iterator in response.data)) {
+      response.data = [response.data as unknown as ContentAPIEntry]
+    }
+    for (const entry of response.data) {
       if (entry.type === 'file') {
         if (entry.size / 1024 / 1024 > 1) {
           getFileByGitUrl(

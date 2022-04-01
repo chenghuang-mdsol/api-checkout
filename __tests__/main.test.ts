@@ -15,13 +15,14 @@ test('throws invalid api call', async () => {
 //   await getFiles(
 //     'mdsol/RaveEDC',
 //     [
-//       'db/Medidata.Database.SampleData/DataSet_RaveIntegrationTestData/dbo.Fields.sql',
-//       'pir',
-//       'cd',
-//       'manifests'
+//       'cd/cyclops',
+//       'cd/github_functions.psm1',
+//       'cd/manifests_functions.psm1',
+//       'manifests',
+//       'pir'
 //     ],
 //     'develop',
-//     '{input your token here}',
+//     '{token}',
 //     'c:\\temp\\test\\abc'
 //   )
 // })

@@ -47,9 +47,8 @@ function getFiles(repository, paths, refs, githubToken, outDirectory) {
         const octokit = new oct.Octokit({ auth: githubToken });
         for (const filePath of paths) {
             let api = `https://api.github.com/repos/${repository}/contents/${filePath}`;
-            core.info(`Handle api ${api}`);
             let apiParent = path.parse(api).dir;
-            let data;
+            //let data: ContentAPIEntry[]
             if (refs && refs.trim()) {
                 api += `?ref=${refs}`;
                 apiParent += `?ref=${refs}`;
@@ -57,12 +56,12 @@ function getFiles(repository, paths, refs, githubToken, outDirectory) {
             let response;
             try {
                 response = yield octokit.request(api);
-                data = response.data;
+                //data = response.data
             }
             catch (err) {
                 if (err.message.includes('This API returns blobs up to 1 MB in size')) {
                     response = yield octokit.request(apiParent);
-                    data = [
+                    response.data = [
                         response.data.filter(function (p) {
                             return p.path === filePath;
                         })[0]
@@ -72,7 +71,10 @@ function getFiles(repository, paths, refs, githubToken, outDirectory) {
                     throw new Error(`${api} is not reachable. Status: ${err}`);
                 }
             }
-            for (const entry of data) {
+            if (!(Symbol.iterator in response.data)) {
+                response.data = [response.data];
+            }
+            for (const entry of response.data) {
                 if (entry.type === 'file') {
                     if (entry.size / 1024 / 1024 > 1) {
                         getFileByGitUrl(entry.git_url, path.join(outDirectory, entry.path), octokit);
