@@ -30,6 +30,6 @@ jobs:
             cd/manifests_functions.psm1
             manifests
             pir
-          refs: ${{ github.ref_name }}
+          refs: develop
           github-token: ${{ secrets.PERSONAL_TOKEN }}
 
