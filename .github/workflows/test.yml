@@ -23,7 +23,7 @@ jobs:
       - uses: ./
         with:
           repository: mdsol/RaveEDC
-          out-directory: ${{ os.temp }}
+          out-directory: ${{ runner.temp }}
           paths: |
             cd/cyclops
             cd/github_functions.psm1
