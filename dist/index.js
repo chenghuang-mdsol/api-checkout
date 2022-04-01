@@ -47,6 +47,7 @@ function getFiles(repository, paths, refs, githubToken, outDirectory) {
         const octokit = new oct.Octokit({ auth: githubToken });
         for (const filePath of paths) {
             let api = `https://api.github.com/repos/${repository}/contents/${filePath}`;
+            core.info(`Handle api ${api}`);
             let apiParent = path.parse(api).dir;
             let data;
             if (refs && refs.trim()) {
@@ -172,7 +173,7 @@ function run() {
         try {
             const repository = core.getInput('repository');
             const outDirectory = core.getInput('out-directory');
-            const paths = core.getInput('paths').split('\r?\n');
+            const paths = core.getInput('paths').split(/\r?\n/);
             const githubToken = core.getInput('github-token');
             const refs = core.getInput('refs');
             yield (0, functions_1.getFiles)(repository, paths, refs, githubToken, outDirectory);

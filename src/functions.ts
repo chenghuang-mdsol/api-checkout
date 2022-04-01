@@ -29,6 +29,7 @@ export async function getFiles(
   const octokit = new oct.Octokit({auth: githubToken})
   for (const filePath of paths) {
     let api = `https://api.github.com/repos/${repository}/contents/${filePath}`
+    core.info(`Handle api ${api}`)
     let apiParent = path.parse(api).dir
     let data: ContentAPIEntry[]
     if (refs && refs.trim()) {
