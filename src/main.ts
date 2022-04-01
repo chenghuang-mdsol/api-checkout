@@ -5,7 +5,7 @@ async function run(): Promise<void> {
   try {
     const repository: string = core.getInput('repository')
     const outDirectory: string = core.getInput('out-directory')
-    const paths: string[] = core.getInput('paths').split('\r?\n')
+    const paths: string[] = core.getInput('paths').split(/\r?\n/)
     const githubToken: string = core.getInput('github-token')
     const refs: string = core.getInput('refs')
 
